@@ -8,19 +8,7 @@ class collage_image():
         im = Image.open(file)
         self.width, self.length = (im.size)
         self.image = im
-
-    def red_green_or_blue(self, y, colour):
-        for x in range(self.width):
-            r, g, b = self.image.getpixel((x,y))
-            if colour == "r":
-                new_pixel = (r,g-50,b-50)
-                self.image.putpixel((x,y),new_pixel)
-            elif colour == "g":
-                new_pixel = (r-0,g,b-20)
-                self.image.putpixel((x,y),new_pixel)
-            else:
-                new_pixel = (0,0,b)
-                self.image.putpixel((x,y),new_pixel)
+        self.filename = file
 
     def negate_red(self):
         for y in range(self.length):
@@ -32,31 +20,15 @@ class collage_image():
     def grey_scale(self):
         self.image = ImageOps.grayscale(self.image)
 
-    def create_uno_band(self, count, original_value,value, colour1, colour2):
-        if count%2 == 0:
-            for y in range(original_value,value):
-                self.red_green_or_blue(y,colour1)
-        else:
-            for y in range(original_value,value):
-                self.red_green_or_blue(y,colour2)
-
-    def horizontal_colour_bands(self, num, colour1, colour2):
-        value = int(self.length/num)
-        for loop in range(1,(num+1)):
-            self.create_uno_band(loop,value*(loop-1),value*loop, colour1, colour2)
-
-    """def vertical_contrast_bands(self, bandCount):
-        bandWidth = int(self.width / bandCount)
-        startX = 0;
-        for stamp in range(0,bandCount):
-            box = (startX + (bandWidth*stamp), 0, bandWidth + (startX + (bandWidth*stamp)), 1300)
-            region = self.image.crop(box)
-            enhancer = ImageEnhance.Contrast(region)
-            if (stamp%2 ==0):
-                region = enhancer.enhance(100)
-            box= (bandWidth * stamp, 1000, (bandWidth*stamp) + bandWidth, 2300)
-            im.paste(region, box)"""
-
+    def horizontal_bands(self, num):
+        copy_image = collage_image(self.filename)
+        copy_image.grey_scale()
+        value_length = int(round(self.length/num))
+        for number in range(0, num):
+            box = (0, value_length*number, self.width, value_length*(number+1))
+            region = copy_image.image.crop(box)
+            if number%2 == 0:
+                self.image.paste(region,box)
 
     def blurryface(self, intensity): #heh heh heh
         self.image = self.image.filter(ImageFilter.GaussianBlur(intensity))
@@ -66,20 +38,22 @@ class collage_image():
         self.image = enhancer.enhance(intensity)
 
     def stupid_vignette(self):
-        #Go away
+        pass
 
-    def checkerboard(self):
-        county = 0
-        countx = 0
-        for x in range(self.width):
-            countx += 1
-            for y in range(self.length):
-                county+=1
-                if county == 10:
-                    county = 0
-                    self.image.putpixel((x,y), (0,0,0))
-                    #I don't know what I'm doing
-
+    def checkerboard(self, num):
+        count = 0
+        copy_image = collage_image(self.filename)
+        copy_image.grey_scale()
+        value_width = int(round(self.width/num))
+        value_length = int(round(self.length/num))
+        for number in range(0, num):
+            count+=1
+            for n in range(0,num):
+                count+=1
+                box = (value_width*n, value_length*number, value_width*(n+1), value_length*(number+1))
+                region = copy_image.image.crop(box)
+                if (count%2 == 0):
+                    self.image.paste(region,box)
 
     def write_text(self):
         txt=Image.new("RGB", self.image.size, (255,255,255))
@@ -93,9 +67,11 @@ class collage_image():
 
 background = collage_image("cat.jpg")
 animal = collage_image("animal.jpg")
-                                    #ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER
+animal.checkerboard(24)                                    #ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER
                                    #PASTED IMAGE WILL ALSO APPLY FILTER ON PASTED IMAGE
-background.image.paste(animal.image,(10,10))
+background.image.paste(animal.image,(10,0))
+print (background.width)
+print (background.length)
 background.image.show()
 
 
