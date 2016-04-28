@@ -37,8 +37,19 @@ class collage_image():
         enhancer = ImageEnhance.Sharpness(self.image)
         self.image = enhancer.enhance(intensity)
 
-    def stupid_vignette(self):
-        pass
+    def vignetto(self,attack,r,g,b):
+        vignette_filter = Image.new('RGBA',(self.width, self.length))
+        for x in range(self.width):
+            for y in range(self.length):
+                x_values = (x, int(self.width/2))
+                y_values = (y, int(self.length/2))
+                distance = int(((max(x_values)-min(x_values))**2 + (max(y_values)-min(y_values))**2)**0.5)
+                opacity = 255 - (distance - attack)
+                if opacity < 0:
+                    opacity = 0
+                vignette_filter.putpixel((x,y), (0,0,0,opacity))
+        empty_image = Image.new("RGB", (self.width, self.length), (r,g,b))
+        self.image = Image.composite(self.image, empty_image, vignette_filter)
 
     def checkerboard(self, num):
         count = 0
@@ -67,7 +78,7 @@ class collage_image():
 
 background = collage_image("cat.jpg")
 animal = collage_image("animal.jpg")
-animal.checkerboard(24)                                    #ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER
+background.vignetto(500,204,0,204)                                    #ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER
                                    #PASTED IMAGE WILL ALSO APPLY FILTER ON PASTED IMAGE
 background.image.paste(animal.image,(10,0))
 print (background.width)
