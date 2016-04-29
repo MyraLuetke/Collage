@@ -2,7 +2,7 @@ from PIL import Image, ImageFilter, ImageEnhance, ImageFont, ImageDraw, ImageOps
 import os, sys
 
 
-class collage_image():
+class image_edit():
 
     def __init__(self, file):
         im = Image.open(file)
@@ -21,7 +21,7 @@ class collage_image():
         self.image = ImageOps.grayscale(self.image)
 
     def horizontal_bands(self, num):
-        copy_image = collage_image(self.filename)
+        copy_image = image_edit(self.filename)
         copy_image.grey_scale()
         value_length = int(round(self.length/num))
         for number in range(0, num):
@@ -53,7 +53,7 @@ class collage_image():
 
     def checkerboard(self, num):
         count = 0
-        copy_image = collage_image(self.filename)
+        copy_image = image_edit(self.filename)
         copy_image.grey_scale()
         value_width = int(round(self.width/num))
         value_length = int(round(self.length/num))
@@ -76,57 +76,34 @@ class collage_image():
     def flip(self):
         self.image = ImageOps.mirror(self.image)
 
-background = collage_image("cat.jpg")
-animal = collage_image("animal.jpg")
-background.vignetto(500,204,0,204)                                    #ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER
-                                   #PASTED IMAGE WILL ALSO APPLY FILTER ON PASTED IMAGE
-background.image.paste(animal.image,(10,0))
-print (background.width)
-print (background.length)
+class create_collage():
+
+    def __init__(self, height, width, filename1,filename2,filename3,filename4):
+        self.height = height
+        self.width = width
+        self.background = Image.new("RGB", (self.width, self.height), (255,255,255))
+        #perhaps it takes in file names, makes them image objects and then always creates the same format
+
+    def blurry_pattern(self, im_file):
+        pass #makes the copied image pattern of progressive blurriness like in the code below
+
+
+
+
+background = image_edit("cat.jpg")
+animal = image_edit("animal.jpg")
+ #ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER
+box = (0, 0, 300, 168)
+region = animal.image.crop(box)
+for stamp in range(6):
+   region = region.filter(ImageFilter.GaussianBlur(stamp))
+   pasteBox = ((stamp*300),(background.length - 168), 300+(300*stamp), 0)
+   background.image.paste(region, pasteBox)                                  #PASTED IMAGE WILL ALSO APPLY FILTER ON PASTED IMAGE
+
 background.image.show()
 
-
-"""
-im = Image.open("rabbit.jpg")
-source = im.split()
-R, G, B = 0, 1, 2
-mask = source[R].point(lambda i: i <100 and 255)
-out = source[G].point(lambda i: i * 0.7)
-source[G].paste(out, None, mask)
-im = Image.merge(im.mode, source)
-
-im.show()"""
+"""collage1 = create_collage(10000,10000)
+collage1.blurry_pattern("animal.jpg")
+collage1.image.show()"""
 
 
-"""region = im2.crop(box)
-for stamp in range(6):
-
-    region = region.filter(ImageFilter.GaussianBlur(stamp))
-    pasteBox = ((stamp*300),500, 300+ (300*stamp), 668)
-    im.paste(region, pasteBox) """
-
-"""
-im = Image.open("cat.jpg")
-im2 = Image.open("dog.jpg")
-
-sourceSize = im2.size
-sourceWidth = sourceSize[0]
-sourceHeight = sourceSize[1]
-
-box = (600, 700, 1100, 1300)
-region = im2.crop(box)
-bandCount = 50
-bandWidth = int(sourceWidth / bandCount)
-startX = 0;
-for stamp in range(0,bandCount):
-    box = (startX + (bandWidth*stamp), 0, bandWidth + (startX + (bandWidth*stamp)), 1300)
-    region = im2.crop(box)
-    enhancer = ImageEnhance.Contrast(region)
-    #if (stamp%2 ==0):
-     #   region = enhancer.enhance( stamp/bandCount)
-    if (stamp%2 ==0):
-        region = enhancer.enhance(100)
-    box= (bandWidth * stamp, 1000, (bandWidth*stamp) + bandWidth, 2300)
-    im.paste(region, box)
-
-im.show()"""
