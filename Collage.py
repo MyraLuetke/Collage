@@ -1,6 +1,6 @@
 from PIL import Image, ImageFilter, ImageEnhance, ImageFont, ImageDraw, ImageOps
 import os, sys
-
+import math
 
 class image_edit():
 
@@ -22,7 +22,7 @@ class image_edit():
 
     def horizontal_bands(self, num):
         copy_image = image_edit(self.filename)
-        copy_image.grey_scale()
+        copy_image.flip()
         value_length = int(round(self.length/num))
         for number in range(0, num):
             box = (0, value_length*number, self.width, value_length*(number+1))
@@ -30,14 +30,14 @@ class image_edit():
             if number%2 == 0:
                 self.image.paste(region,box)
 
-    def blurryface(self, intensity): #heh heh heh
+    def blurryface(self, intensity):
         self.image = self.image.filter(ImageFilter.GaussianBlur(intensity))
 
     def enhancedface(self, intensity):
         enhancer = ImageEnhance.Sharpness(self.image)
         self.image = enhancer.enhance(intensity)
 
-    def vignetto(self,attack,r,g,b):
+    def vignetto(self,attack,colour):
         vignette_filter = Image.new('RGBA',(self.width, self.length))
         for x in range(self.width):
             for y in range(self.length):
@@ -48,7 +48,7 @@ class image_edit():
                 if opacity < 0:
                     opacity = 0
                 vignette_filter.putpixel((x,y), (0,0,0,opacity))
-        empty_image = Image.new("RGB", (self.width, self.length), (r,g,b))
+        empty_image = Image.new("RGB", (self.width, self.length), colour)
         self.image = Image.composite(self.image, empty_image, vignette_filter)
 
     def checkerboard(self, num):
@@ -66,43 +66,51 @@ class image_edit():
                 if (count%2 == 0):
                     self.image.paste(region,box)
 
-    def write_text(self):
-        txt=Image.new("RGB", self.image.size, (255,255,255))
-        fnt = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
-        draw = ImageDraw.Draw(txt)
-        draw.text((10,10), "Cool", font=fnt,fill=(255,255,255))
-        self.image = Image.alpha_composite(self.image, txt)
+    def write_text(self, font, font_size, word, colour, ):
+        draw = ImageDraw.Draw(self.image)
+        fnt = ImageFont.truetype(font,font_size)
+        draw.text((50,self.length - 150), word, colour, font = fnt)
 
     def flip(self):
         self.image = ImageOps.mirror(self.image)
 
 class create_collage():
 
-    def __init__(self, height, width, filename1,filename2,filename3,filename4):
+    def __init__(self, height, width):
         self.height = height
         self.width = width
-        self.background = Image.new("RGB", (self.width, self.height), (255,255,255))
-        #perhaps it takes in file names, makes them image objects and then always creates the same format
+        self.image = Image.new("RGB", (self.width, self.height), (255,255,255))
 
     def blurry_pattern(self, im_file):
-        pass #makes the copied image pattern of progressive blurriness like in the code below
+        box = (300, 168)
+        picture = image_edit(im_file)
+        number = math.ceil(self.width/300)
+        for stamp in range(number):
+            picture.blurryface(stamp)
+            region = picture.image.resize(box)
+            pasteBox = ((stamp*300), (self.height - 168), 300+(300*stamp), self.height)
+            self.image.paste(region, pasteBox)
 
-
-
+    def main_picture(self, im_file, filter, w,x,y,z):
+        picture = image_edit(im_file)
+        if filter == "vignetto":
+            picture.vignetto(w,x,y,z)
+        elif filter == "negate_red":
+            picture.negate_red()
+        elif filter == "grey_scale":
+            picture.grey_scale()
+        thing = picture.image.resize((700,800))
+        self.image.paste(thing,(0,0))
 
 background = image_edit("cat.jpg")
+#background.vignetto(500,0,0,0)
 animal = image_edit("animal.jpg")
- #ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER
-box = (0, 0, 300, 168)
-region = animal.image.crop(box)
-for stamp in range(6):
-   region = region.filter(ImageFilter.GaussianBlur(stamp))
-   pasteBox = ((stamp*300),(background.length - 168), 300+(300*stamp), 0)
-   background.image.paste(region, pasteBox)                                  #PASTED IMAGE WILL ALSO APPLY FILTER ON PASTED IMAGE
-
+animal.write_text("BRADHITC.TTF",100,"Myra", (0,0,0))
+background.image.paste(animal.image, (10,0)) # ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER PASTED IMAGE WILL ALSO APPLY FILTER ON PASTED IMAGE
 background.image.show()
 
-"""collage1 = create_collage(10000,10000)
+"""collage1 = create_collage(1000,1000)
+collage1.main_picture("cat.jpg","negate_red",500,0,0,0)
 collage1.blurry_pattern("animal.jpg")
 collage1.image.show()"""
 
