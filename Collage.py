@@ -58,7 +58,6 @@ class image_edit():
         value_width = int(round(self.width/num))
         value_length = int(round(self.length/num))
         for number in range(0, num):
-            count+=1
             for n in range(0,num):
                 count+=1
                 box = (value_width*n, value_length*number, value_width*(n+1), value_length*(number+1))
@@ -71,47 +70,53 @@ class image_edit():
         fnt = ImageFont.truetype(font,font_size)
         draw.text((50,self.length - 150), word, colour, font = fnt)
 
-    def flip(self):
+    def flip_horizontal(self):
         self.image = ImageOps.mirror(self.image)
 
+    def flip_vertical(self):
+        self.image = ImageOps.flip(self.image)
+
+    def invert_image(self):
+        self.image = ImageOps.invert(self.image)
+
+    def blurry_pattern(self):
+        box = (300, 168)
+        number = math.ceil(1200/300)
+        empty_picture = Image.new("RGB", (1200,168))
+        for stamp in range(4):
+            self.blurryface(stamp*3)
+            region = self.image.resize(box)
+            pasteBox = (300*stamp,0, 300+(300*stamp), 168)
+            empty_picture.paste(region, pasteBox)
+        self.image = empty_picture
 class create_collage():
 
-    def __init__(self, height, width):
+    def __init__(self, height, width, portrait_filename1, landscape_filename2, filename3, filename4):
         self.height = height
         self.width = width
-        self.image = Image.new("RGB", (self.width, self.height), (255,255,255))
+        self.background = Image.new("RGB", (self.width, self.height), (255,255,255))
+        self.picture1 = image_edit(portrait_filename1)
+        self.picture2 = image_edit(landscape_filename2)
+        self.picture3 = image_edit(filename3)
+        self.picture4 = image_edit(filename4)
 
-    def blurry_pattern(self, im_file):
-        box = (300, 168)
-        picture = image_edit(im_file)
-        number = math.ceil(self.width/300)
-        for stamp in range(number):
-            picture.blurryface(stamp)
-            region = picture.image.resize(box)
-            pasteBox = ((stamp*300), (self.height - 168), 300+(300*stamp), self.height)
-            self.image.paste(region, pasteBox)
+    def generate(self):
+        self.picture1.vignetto(400,(0,0,0))
+        region = self.picture1.image.resize((800,1000))
+        self.background.paste(region,(0,0))
+        self.background.show()
 
-    def main_picture(self, im_file, filter, w,x,y,z):
-        picture = image_edit(im_file)
-        if filter == "vignetto":
-            picture.vignetto(w,x,y,z)
-        elif filter == "negate_red":
-            picture.negate_red()
-        elif filter == "grey_scale":
-            picture.grey_scale()
-        thing = picture.image.resize((700,800))
-        self.image.paste(thing,(0,0))
 
-background = image_edit("cat.jpg")
-#background.vignetto(500,0,0,0)
+
+"""background = image_edit("cat.jpg")
+background.checkerboard(5)
 animal = image_edit("animal.jpg")
 animal.write_text("BRADHITC.TTF",100,"Myra", (0,0,0))
-background.image.paste(animal.image, (10,0)) # ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER PASTED IMAGE WILL ALSO APPLY FILTER ON PASTED IMAGE
-background.image.show()
+#background.image.paste(animal.image, (10,0)) # ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER PASTED IMAGE WILL ALSO APPLY FILTER ON PASTED IMAGE
+background.image.show()"""
 
-"""collage1 = create_collage(1000,1000)
-collage1.main_picture("cat.jpg","negate_red",500,0,0,0)
-collage1.blurry_pattern("animal.jpg")
-collage1.image.show()"""
+collage1 = create_collage(1200,1200,"panda.jpg","animal.jpg", "cat.jpg", "rabbit.jpg")
+collage1.generate()
+
 
 
