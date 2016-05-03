@@ -58,6 +58,8 @@ class image_edit():
         value_width = int(round(self.width/num))
         value_length = int(round(self.length/num))
         for number in range(0, num):
+            if num%2 == 0:
+                count += 1
             for n in range(0,num):
                 count+=1
                 box = (value_width*n, value_length*number, value_width*(n+1), value_length*(number+1))
@@ -97,16 +99,26 @@ class image_edit():
             empty_picture.paste(region, pasteBox)
         self.image = empty_picture
 
+    def reflection(self,reflection_line):
+        empty_picture= Image.new("RGB", (self.width, self.length))
+        region = self.image.crop((0,0,self.width,reflection_line))
+        empty_picture.paste(region,(0,0))
+        for y in range(reflection_line,self.length):
+            for x in range(self.width):
+                r, g, b = self.image.getpixel((x,y))
+                #new_pixel =
+                self.image.putpixel((x,y), negate_red_pixel)
+
 class create_collage():
 
-    def __init__(self, height, width, portrait_filename1, landscape_filename2, filename3, filename4):
+    def __init__(self, height, width, portrait_filename1, landscape_filename2, portrait_filename3, landscape_filename4):
         self.height = height
         self.width = width
         self.background = Image.new("RGB", (self.width, self.height), (255,255,255))
         self.picture1 = image_edit(portrait_filename1)
         self.picture2 = image_edit(landscape_filename2)
-        self.picture3 = image_edit(filename3)
-        self.picture4 = image_edit(filename4)
+        self.picture3 = image_edit(portrait_filename3)
+        self.picture4 = image_edit(landscape_filename4)
 
     def generate(self):
         self.picture1.vignetto(int(self.width-((self.width/3)*2)),(0,0,0))
@@ -116,6 +128,9 @@ class create_collage():
         self.picture2.blurry_pattern(resized_height,self.width)
         box = (0, (self.height-resized_height), self.width, self.height)
         self.background.paste(self.picture2.image, box)
+        self.picture3.checkerboard(5)
+        region2 = self.picture3.image.resize((int((self.width/6)*2),int((resized_height*3)/5 *3)))
+        self.background.paste(region2,(int((self.width/6)*4),0,self.width, (self.height - int(((resized_height*3)/5 *2)))-resized_height))
         self.background.show()
 
 
