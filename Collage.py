@@ -79,16 +79,24 @@ class image_edit():
     def invert_image(self):
         self.image = ImageOps.invert(self.image)
 
-    def blurry_pattern(self):
-        box = (300, 168)
-        number = math.ceil(1200/300)
-        empty_picture = Image.new("RGB", (1200,168))
-        for stamp in range(4):
+    def check_fits(self,number):
+        min = 3
+        while (number % min) != 0:
+            min +=1
+        return min
+
+    def blurry_pattern(self, length, width):
+        number = self.check_fits(width)
+        width_of_resized = int(width/number)
+        box = (width_of_resized,length)
+        empty_picture = Image.new("RGB", (width,length))
+        for stamp in range(number):
             self.blurryface(stamp*3)
             region = self.image.resize(box)
-            pasteBox = (300*stamp,0, 300+(300*stamp), 168)
+            pasteBox = (width_of_resized*stamp,0, width_of_resized+(width_of_resized*stamp), length)
             empty_picture.paste(region, pasteBox)
         self.image = empty_picture
+
 class create_collage():
 
     def __init__(self, height, width, portrait_filename1, landscape_filename2, filename3, filename4):
@@ -101,9 +109,13 @@ class create_collage():
         self.picture4 = image_edit(filename4)
 
     def generate(self):
-        self.picture1.vignetto(400,(0,0,0))
-        region = self.picture1.image.resize((800,1000))
+        self.picture1.vignetto(int(self.width-((self.width/3)*2)),(0,0,0))
+        region = self.picture1.image.resize((int((self.width/6)*4), int((self.height/4)*3)))
         self.background.paste(region,(0,0))
+        resized_height = int(self.height/4)
+        self.picture2.blurry_pattern(resized_height,self.width)
+        box = (0, (self.height-resized_height), self.width, self.height)
+        self.background.paste(self.picture2.image, box)
         self.background.show()
 
 
