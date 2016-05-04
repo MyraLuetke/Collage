@@ -44,9 +44,11 @@ class image_edit():
                 x_values = (x, int(self.width/2))
                 y_values = (y, int(self.length/2))
                 distance = int(((max(x_values)-min(x_values))**2 + (max(y_values)-min(y_values))**2)**0.5)
-                opacity = 255 - (distance - attack)
+                opacity = int(255 - (distance - attack))
                 if opacity < 0:
                     opacity = 0
+                if opacity > 255:
+                    opacity = 255
                 vignette_filter.putpixel((x,y), (0,0,0,opacity))
         empty_image = Image.new("RGB", (self.width, self.length), colour)
         self.image = Image.composite(self.image, empty_image, vignette_filter)
@@ -82,7 +84,7 @@ class image_edit():
         self.image = ImageOps.invert(self.image)
 
     def check_fits(self,number):
-        min = 3
+        min = 4
         while (number % min) != 0:
             min +=1
         return min
@@ -100,14 +102,20 @@ class image_edit():
         self.image = empty_picture
 
     def reflection(self,reflection_line):
-        empty_picture= Image.new("RGB", (self.width, self.length))
+        empty_picture= Image.new("RGB", (self.width, reflection_line*2))
         region = self.image.crop((0,0,self.width,reflection_line))
         empty_picture.paste(region,(0,0))
+        y_count = reflection_line
         for y in range(reflection_line,self.length):
+            x_count = 0
             for x in range(self.width):
-                r, g, b = self.image.getpixel((x,y))
-                #new_pixel =
-                self.image.putpixel((x,y), negate_red_pixel)
+                r, g, b = self.image.getpixel((x_count,y_count))
+                self.image.putpixel((x,y), (r,g,b))
+                x_count += 1
+            y_count -= 1
+
+    def paint_texture(self):
+            self.image = self.image.filter(ImageFilter.ModeFilter(40))
 
 class create_collage():
 
@@ -131,19 +139,22 @@ class create_collage():
         self.picture3.checkerboard(5)
         region2 = self.picture3.image.resize((int((self.width/6)*2),int((resized_height*3)/5 *3)))
         self.background.paste(region2,(int((self.width/6)*4),0,self.width, (self.height - int(((resized_height*3)/5 *2)))-resized_height))
+        self.picture4.reflection(int(self.picture4.length/2))
+        region3 = self.picture4.image.resize((int((self.width/6)*2),int((resized_height*3)/5 *2)))
+        self.background.paste(region3,(int((self.width/6)*4),((self.height - int(((resized_height*3)/5 *2)))-resized_height),self.width, (self.height - resized_height)))
         self.background.show()
 
 
 
-"""background = image_edit("cat.jpg")
-background.checkerboard(5)
+background = image_edit("cat.jpg")
+background.paint_texture()
 animal = image_edit("animal.jpg")
 animal.write_text("BRADHITC.TTF",100,"Myra", (0,0,0))
 #background.image.paste(animal.image, (10,0)) # ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER PASTED IMAGE WILL ALSO APPLY FILTER ON PASTED IMAGE
-background.image.show()"""
+background.image.show()
 
-collage1 = create_collage(1200,1200,"panda.jpg","animal.jpg", "cat.jpg", "rabbit.jpg")
-collage1.generate()
+"""collage1 = create_collage(1500,1500,"panda.jpg","animal.jpg", "cat.jpg", "rabbit.jpg")
+collage1.generate()"""
 
 
 
