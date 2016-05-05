@@ -37,14 +37,14 @@ class image_edit():
         enhancer = ImageEnhance.Sharpness(self.image)
         self.image = enhancer.enhance(intensity)
 
-    def vignetto(self,attack,colour):
+    def vignetto(self,attack,colour): #the larger the strength number, the weaker it is
         vignette_filter = Image.new('RGBA',(self.width, self.length))
         for x in range(self.width):
             for y in range(self.length):
                 x_values = (x, int(self.width/2))
                 y_values = (y, int(self.length/2))
                 distance = int(((max(x_values)-min(x_values))**2 + (max(y_values)-min(y_values))**2)**0.5)
-                opacity = int(255 - (distance - attack))
+                opacity = int((255 - (distance - attack)))
                 if opacity < 0:
                     opacity = 0
                 if opacity > 255:
@@ -69,7 +69,7 @@ class image_edit():
                 if (count%2 == 0):
                     self.image.paste(region,box)
 
-    def write_text(self, font, font_size, word, colour, ):
+    def write_text(self, font, font_size, word, colour):
         draw = ImageDraw.Draw(self.image)
         fnt = ImageFont.truetype(font,font_size)
         draw.text((50,self.length - 150), word, colour, font = fnt)
@@ -115,7 +115,10 @@ class image_edit():
             y_count -= 1
 
     def paint_texture(self):
-            self.image = self.image.filter(ImageFilter.ModeFilter(40))
+        self.image = self.image.filter(ImageFilter.ModeFilter(40))
+
+    def change_size(self,width,height):
+        self.image = self.image.resize((width,height))
 
 class create_collage():
 
@@ -129,8 +132,10 @@ class create_collage():
         self.picture4 = image_edit(landscape_filename4)
 
     def generate(self):
-        self.picture1.vignetto(int(self.width-((self.width/3)*2)),(0,0,0))
-        region = self.picture1.image.resize((int((self.width/6)*4), int((self.height/4)*3)))
+        self.picture1.vignetto(int(self.picture1.width-(self.picture1.width/3)),(0,0,0))
+        self.picture1.change_size(int((self.width/6)*4), int((self.height/4)*3))
+        self.picture1.write_text("BRADHITC.TTF",100,"Mama Mia", (0,0,0))
+        region = self.picture1.image
         self.background.paste(region,(0,0))
         resized_height = int(self.height/4)
         self.picture2.blurry_pattern(resized_height,self.width)
@@ -146,15 +151,15 @@ class create_collage():
 
 
 
-background = image_edit("cat.jpg")
-background.paint_texture()
+"""background = image_edit("cat.jpg")
+background.vignetto(500,(0,0,0),0.10)
 animal = image_edit("animal.jpg")
 animal.write_text("BRADHITC.TTF",100,"Myra", (0,0,0))
-#background.image.paste(animal.image, (10,0)) # ORDER OF FILTERS IS IMPORTANT. ANY FILTER ON BACKGROUND AFTER PASTED IMAGE WILL ALSO APPLY FILTER ON PASTED IMAGE
-background.image.show()
+#background.image.paste(animal.image, (10,0))
+background.image.show()"""
 
-"""collage1 = create_collage(1500,1500,"panda.jpg","animal.jpg", "cat.jpg", "rabbit.jpg")
-collage1.generate()"""
+collage1 = create_collage(1500,1500,"IMG_4016.JPG","IMG_3881.JPG", "IMG_3443.JPG", "IMG_3982.JPG")
+collage1.generate()
 
 
 
