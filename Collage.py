@@ -22,7 +22,7 @@ class image_edit():
 
     def horizontal_bands(self, num):
         copy_image = image_edit(self.filename)
-        copy_image.flip()
+        copy_image.flip_horizontal()
         value_length = int(round(self.length/num))
         for number in range(0, num):
             box = (0, value_length*number, self.width, value_length*(number+1))
@@ -37,7 +37,7 @@ class image_edit():
         enhancer = ImageEnhance.Sharpness(self.image)
         self.image = enhancer.enhance(intensity)
 
-    def vignetto(self,attack,colour): #the larger the strength number, the weaker it is
+    def vignetto(self,attack,colour):
         vignette_filter = Image.new('RGBA',(self.width, self.length))
         for x in range(self.width):
             for y in range(self.length):
@@ -114,11 +114,8 @@ class image_edit():
                 x_count += 1
             y_count -= 1
 
-    def paint_texture(self):
-        self.image = self.image.filter(ImageFilter.ModeFilter(40))
-
-    def change_size(self,width,height):
-        self.image = self.image.resize((width,height))
+    def paint_texture(self,intensity):
+        self.image = self.image.filter(ImageFilter.ModeFilter(intensity))
 
 class create_collage():
 
@@ -133,9 +130,7 @@ class create_collage():
 
     def generate(self):
         self.picture1.vignetto(int(self.picture1.width-(self.picture1.width/3)),(0,0,0))
-        self.picture1.change_size(int((self.width/6)*4), int((self.height/4)*3))
-        self.picture1.write_text("BRADHITC.TTF",100,"Mama Mia", (0,0,0))
-        region = self.picture1.image
+        region = self.picture1.image.resize((int((self.width/6)*4), int((self.height/4)*3)))
         self.background.paste(region,(0,0))
         resized_height = int(self.height/4)
         self.picture2.blurry_pattern(resized_height,self.width)
@@ -149,17 +144,15 @@ class create_collage():
         self.background.paste(region3,(int((self.width/6)*4),((self.height - int(((resized_height*3)/5 *2)))-resized_height),self.width, (self.height - resized_height)))
         self.background.show()
 
-
-
 """background = image_edit("cat.jpg")
-background.vignetto(500,(0,0,0),0.10)
+background.paint_texture(50)
 animal = image_edit("animal.jpg")
 animal.write_text("BRADHITC.TTF",100,"Myra", (0,0,0))
-#background.image.paste(animal.image, (10,0))
+background.image.paste(animal.image, (10,0))
 background.image.show()"""
 
-collage1 = create_collage(1500,1500,"IMG_4016.JPG","IMG_3881.JPG", "IMG_3443.JPG", "IMG_3982.JPG")
-collage1.generate()
+collage1 = create_collage(2000,1500,"IMG_3443.JPG","IMG_3881.JPG", "IMG_4016.JPG", "IMG_3982.JPG")
+collage1.generate() #This is going to take a while depending on the size of pictures you've chosen so prepare yourself.
 
 
 
